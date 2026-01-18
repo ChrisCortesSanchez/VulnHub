@@ -74,7 +74,7 @@ jobs:
     
     - name: Test vulnerable version (should have vulnerabilities)
       run: |
-        pytest tests/test_vulnerable_regression.py -v
+        pytest tests/test_vulnerable_regress.py -v
     
     - name: Stop vulnerable application
       run: |
@@ -89,7 +89,7 @@ jobs:
     
     - name: Test secure version (should block attacks)
       run: |
-        pytest tests/test_secure_regression.py -v
+        pytest tests/test_secure_regress.py -v
     
     - name: Stop secure application
       run: |
@@ -100,7 +100,7 @@ jobs:
         nohup python -m app.app > vuln_for_scan.log 2>&1 &
         echo $! > scan.pid
         sleep 5
-        pytest tests/test_scanner_regression.py -v
+        pytest tests/test_scanner_regress.py -v
         kill $(cat scan.pid) || true
     
     - name: Upload test logs
