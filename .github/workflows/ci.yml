@@ -72,6 +72,27 @@ jobs:
         echo $! > vulnerable.pid
         sleep 5
     
+    - name: Verify vulnerable app is running
+      run: |
+        if ! kill -0 $(cat vulnerable.pid) 2>/dev/null; then
+          echo "ERROR: Vulnerable app process died!"
+          cat vulnerable.log
+          exit 1
+        fi
+        
+        for i in {1..30}; do
+          if curl -s http://localhost:5001/ > /dev/null 2>&1; then
+            echo "✓ Vulnerable app is ready on port 5001"
+            exit 0
+          fi
+          echo "Waiting for vulnerable app... ($i/30)"
+          sleep 1
+        done
+        
+        echo "ERROR: Vulnerable app failed to respond"
+        cat vulnerable.log
+        exit 1
+    
     - name: Test vulnerable version (should have vulnerabilities)
       run: |
         pytest tests/test_vulnerable_regress.py -v
@@ -85,11 +106,46 @@ jobs:
       run: |
         nohup python -m app.secured.app > secure.log 2>&1 &
         echo $! > secure.pid
-        sleep 10
+        sleep 5
+    
+    - name: Verify secure app is running
+      run: |
+        # Check if process is still running
+        if ! kill -0 $(cat secure.pid) 2>/dev/null; then
+          echo "ERROR: Secure app process died immediately!"
+          echo "=== Secure App Logs ==="
+          cat secure.log
+          exit 1
+        fi
+        
+        # Wait for app to be ready (max 30 seconds)
+        for i in {1..30}; do
+          if curl -s http://localhost:5002/ > /dev/null 2>&1; then
+            echo "✓ Secure app is ready on port 5002"
+            exit 0
+          fi
+          echo "Waiting for secure app... ($i/30)"
+          sleep 1
+        done
+        
+        echo "ERROR: Secure app failed to respond after 30 seconds"
+        echo "=== Secure App Logs ==="
+        cat secure.log
+        echo "=== Process Status ==="
+        ps aux | grep python || true
+        echo "=== Port Status ==="
+        netstat -tuln | grep 5002 || echo "Port 5002 not listening"
+        exit 1
     
     - name: Test secure version (should block attacks)
       run: |
         pytest tests/test_secure_regress.py -v
+    
+    - name: Show secure app logs on failure
+      if: failure()
+      run: |
+        echo "=== Secure Application Logs ==="
+        cat secure.log || echo "No log file found"
     
     - name: Stop secure application
       run: |
@@ -100,7 +156,34 @@ jobs:
         nohup python -m app.app > vuln_for_scan.log 2>&1 &
         echo $! > scan.pid
         sleep 5
+    
+    - name: Verify scanner app is running
+      run: |
+        if ! kill -0 $(cat scan.pid) 2>/dev/null; then
+          echo "ERROR: App for scanner died!"
+          cat vuln_for_scan.log
+          exit 1
+        fi
+        
+        for i in {1..30}; do
+          if curl -s http://localhost:5001/ > /dev/null 2>&1; then
+            echo "✓ App ready for scanner testing"
+            exit 0
+          fi
+          echo "Waiting for app... ($i/30)"
+          sleep 1
+        done
+        
+        echo "ERROR: App failed to respond"
+        cat vuln_for_scan.log
+        exit 1
+    
+    - name: Run scanner tests
+      run: |
         pytest tests/test_scanner_regress.py -v
+    
+    - name: Stop scanner test app
+      run: |
         kill $(cat scan.pid) || true
     
     - name: Upload test logs
@@ -186,6 +269,27 @@ jobs:
         nohup python -m app.app > scanner_test.log 2>&1 &
         echo $! > scanner.pid
         sleep 5
+    
+    - name: Verify app is running for scanner
+      run: |
+        if ! kill -0 $(cat scanner.pid) 2>/dev/null; then
+          echo "ERROR: App died!"
+          cat scanner_test.log
+          exit 1
+        fi
+        
+        for i in {1..30}; do
+          if curl -s http://localhost:5001/ > /dev/null 2>&1; then
+            echo "✓ App is ready for scanning"
+            exit 0
+          fi
+          echo "Waiting for app... ($i/30)"
+          sleep 1
+        done
+        
+        echo "ERROR: App failed to respond"
+        cat scanner_test.log
+        exit 1
     
     - name: Run scanner
       run: |
