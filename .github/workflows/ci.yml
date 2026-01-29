@@ -219,7 +219,7 @@ jobs:
     
     - name: Build vulnerable version
       run: |
-        docker build -t safebyr:vulnerable -f docker/Dockerfile.vulnerable .
+        docker build -t safebyr:vulnerable -f docker/Dockerfile.vuln .
     
     - name: Build secure version
       run: |
