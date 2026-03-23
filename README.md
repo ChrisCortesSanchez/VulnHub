@@ -14,22 +14,22 @@ pipeline.
 Designed to demonstrate offensive and defensive security skills end-to-end:
 exploit development, secure coding, CVSS-based risk quantification, and
 automated security validation via CI/CD. Achieved a **95% reduction in
-application risk score** (37/100 → 2/100) across the hardened implementation.
+application risk score** (37/100 to 2/100) across the hardened implementation.
 
 ---
 
 ## How This Project Works
 
-SafeBuyr ships as **two fully functional versions of the same e-commerce application** that run simultaneously on separate ports — the vulnerable version exposes every flaw intentionally, and the hardened version fixes each one with production-grade controls. The exploit scripts, scanner, and CI pipeline all target both, making the security impact of every fix directly observable.
+SafeBuyr ships as **two fully functional versions of the same e-commerce application** that run simultaneously on separate ports. The vulnerable version exposes every flaw intentionally; the hardened version fixes each one with production-grade controls. The exploit scripts, scanner, and CI pipeline all target both, making the security impact of every fix directly observable.
 
 | | Vulnerable Version | Hardened Version |
 |-|-------------------|-----------------|
 | **Purpose** | Demonstrates how each vulnerability works and is exploited | Shows the correct, production-grade fix for every issue |
-| **Password storage** | MD5 without salt — crackable in seconds | bcrypt with cost factor 12 |
-| **SQL queries** | Raw string concatenation — injectable | Parameterized queries via SQLAlchemy ORM |
-| **Output encoding** | Jinja2 `\|safe` filter — XSS possible | Automatic escaping, `\|safe` removed |
-| **Authorization** | None — any user can access any resource | User ID validation enforced on every endpoint |
-| **CSRF protection** | No tokens — state-changing forms unprotected | Flask-WTF tokens on all forms |
+| **Password storage** | MD5 without salt, crackable in seconds | bcrypt with cost factor 12 |
+| **SQL queries** | Raw string concatenation, injectable | Parameterized queries via SQLAlchemy ORM |
+| **Output encoding** | Jinja2 `\|safe` filter, XSS possible | Automatic escaping, `\|safe` removed |
+| **Authorization** | None, any user can access any resource | User ID validation enforced on every endpoint |
+| **CSRF protection** | No tokens, state-changing forms unprotected | Flask-WTF tokens on all forms |
 | **Security headers** | 0 of 6 headers present | 5 of 6 headers implemented |
 | **Risk score** | 37/100 (High Risk) | 2/100 (Excellent) |
 
@@ -47,7 +47,7 @@ SafeBuyr ships as **two fully functional versions of the same e-commerce applica
 - **7 exploitation scripts** covering individual attack vectors and a full automated attack chain
 - **8-phase vulnerability scanner** with CVSS-based risk scoring and HTML report generation
 - **Side-by-side implementations:** vulnerable and hardened versions of every endpoint
-- **95% risk reduction** validated end-to-end by the scanner (37/100 → 2/100)
+- **95% risk reduction** validated end-to-end by the scanner (37/100 to 2/100)
 - **Automated CI/CD pipeline:** GitHub Actions with Docker, running regression tests on every push and pull request
 - **Executive-ready HTML reports** with severity breakdowns and remediation guidance
 
@@ -98,12 +98,12 @@ SafeBuyr/
 
 | ID | Vulnerability | Severity | OWASP Category |
 |----|--------------|----------|----------------|
-| VULN-001 | SQL Injection — login bypass and data extraction | CRITICAL | A03:2021 |
-| VULN-002 | Stored XSS — payload injection via product reviews | HIGH | A03:2021 |
-| VULN-003 | IDOR — unauthorized access to orders and cart | HIGH | A01:2021 |
-| VULN-004 | Weak Password Hashing — MD5 without salt | HIGH | A02:2021 |
-| VULN-005 | Missing CSRF Protection — unprotected state-changing actions | MEDIUM | A01:2021 |
-| VULN-006 | Missing Security Headers — no defense-in-depth layer | MEDIUM | A05:2021 |
+| VULN-001 | SQL Injection: login bypass and data extraction | CRITICAL | A03:2021 |
+| VULN-002 | Stored XSS: payload injection via product reviews | HIGH | A03:2021 |
+| VULN-003 | IDOR: unauthorized access to orders and cart | HIGH | A01:2021 |
+| VULN-004 | Weak Password Hashing: MD5 without salt | HIGH | A02:2021 |
+| VULN-005 | Missing CSRF Protection: unprotected state-changing actions | MEDIUM | A01:2021 |
+| VULN-006 | Missing Security Headers: no defense-in-depth layer | MEDIUM | A05:2021 |
 
 ### Fixes Implemented
 
@@ -131,7 +131,7 @@ The custom vulnerability scanner runs 8 sequential assessment phases against a t
 | 5 | IDOR Testing | Horizontal privilege escalation on order and cart resources |
 | 6 | CSRF Detection | Presence and validity of anti-CSRF tokens on forms |
 | 7 | Security Headers | Response header audit against OWASP recommendations |
-| 8 | Risk Scoring | CVSS-weighted aggregation into 0–100 score with HTML report |
+| 8 | Risk Scoring | CVSS-weighted aggregation into 0-100 score with HTML report |
 
 ---
 
@@ -169,21 +169,23 @@ python app/secured/data/seed_data_secure.py  # Hardened version
 
 ## Usage
 
-**Run the vulnerable version:**
+The scanner and exploit scripts require the target application to be running first. Open a separate terminal for each app, then run the scanner or exploits in a third terminal.
+
+**Terminal 1: Run the vulnerable version**
 ```bash
 python app/app.py
-# Defaults to port 5001 — change with: python app/app.py --port <PORT>
+# Defaults to port 5001; change with: python app/app.py --port <PORT>
 # Access at: http://localhost:5001
 ```
 
-**Run the hardened version:**
+**Terminal 2: Run the hardened version**
 ```bash
 python app/secured/app_secure.py
-# Defaults to port 5002 — change with: python app/secured/app_secure.py --port <PORT>
+# Defaults to port 5002; change with: python app/secured/app_secure.py --port <PORT>
 # Access at: http://localhost:5002
 ```
 
-> Both versions need to run on different ports simultaneously. The defaults (5001/5002) are chosen to avoid conflicts with Flask's standard port 5000, but any two available ports work — just pass the correct URL to the scanner.
+> Both versions need to run on different ports simultaneously. The defaults (5001/5002) are chosen to avoid conflicts with Flask's standard port 5000, but any two available ports work. Just pass the correct URL to the scanner.
 
 **Test credentials:**
 
@@ -194,11 +196,13 @@ python app/secured/app_secure.py
 
 ### Running the Scanner
 
+With the target application running in a separate terminal:
+
 ```bash
-# Scan the vulnerable version
+# Terminal 3: Scan the vulnerable version
 python scanner/vulnerability_scanner.py http://localhost:5001
 
-# Scan the hardened version
+# Terminal 3: Scan the hardened version
 python scanner/vulnerability_scanner.py http://localhost:5002
 ```
 
@@ -238,19 +242,27 @@ Running assessment phases...
 
 Reports are saved to `docs/` with a UTC timestamp. Open the HTML file in any browser.
 
-### Running the Automated Attack Chain
+### Running the Exploit Scripts
+
+With the vulnerable version running in a separate terminal, run any exploit from a second terminal:
 
 ```bash
+# Individual exploits
+python exploits/01_sql_injection.py
+python exploits/02_xss_attack.py
+python exploits/03_idor_attack.py
+
+# Full automated attack chain (recon, SQLi, session hijacking, IDOR, XSS in sequence)
 python exploits/07_automated_attack_chain.py
 ```
 
-Executes recon, SQL injection, session hijacking, IDOR exploitation, and XSS payload injection in sequence against the vulnerable version.
+All exploit scripts target the vulnerable version by default. Run the same scripts against the hardened version to confirm each fix blocks the attack.
 
 ---
 
 ## Risk Scoring
 
-The scanner calculates a 0–100 risk score by weighting each finding against a worst-case baseline where all checks fail at CRITICAL severity:
+The scanner calculates a 0-100 risk score by weighting each finding against a worst-case baseline where all checks fail at CRITICAL severity:
 
 | Severity | Weight |
 |----------|--------|
