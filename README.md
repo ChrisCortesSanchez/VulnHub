@@ -1,6 +1,6 @@
 # SafeBuyr — E-commerce Security Platform
 
-![CI](https://github.com/ChrisCortesSanchez/SafeBuyr/actions/workflows/CI.yml/badge.svg)
+[![CI](https://github.com/ChrisCortesSanchez/SafeBuyr/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ChrisCortesSanchez/SafeBuyr/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
 ![Flask](https://img.shields.io/badge/flask-3.0+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -18,9 +18,26 @@ application risk score** (37/100 → 2/100) across the hardened implementation.
 
 ---
 
+## How This Project Works
+
+SafeBuyr ships as **two fully functional versions of the same e-commerce application** that run simultaneously on separate ports — the vulnerable version exposes every flaw intentionally, and the hardened version fixes each one with production-grade controls. The exploit scripts, scanner, and CI pipeline all target both, making the security impact of every fix directly observable.
+
+| | Vulnerable Version | Hardened Version |
+|-|-------------------|-----------------|
+| **Purpose** | Demonstrates how each vulnerability works and is exploited | Shows the correct, production-grade fix for every issue |
+| **Password storage** | MD5 without salt — crackable in seconds | bcrypt with cost factor 12 |
+| **SQL queries** | Raw string concatenation — injectable | Parameterized queries via SQLAlchemy ORM |
+| **Output encoding** | Jinja2 `\|safe` filter — XSS possible | Automatic escaping, `\|safe` removed |
+| **Authorization** | None — any user can access any resource | User ID validation enforced on every endpoint |
+| **CSRF protection** | No tokens — state-changing forms unprotected | Flask-WTF tokens on all forms |
+| **Security headers** | 0 of 6 headers present | 5 of 6 headers implemented |
+| **Risk score** | 37/100 (High Risk) | 2/100 (Excellent) |
+
+---
+
 ## Sample Report Output
 
-![Scanner Report Screenshot](assets/report-screenshot.png)
+![Scanner Report Screenshot](report-screenshot.png)
 
 ---
 
@@ -152,17 +169,21 @@ python app/secured/data/seed_data_secure.py  # Hardened version
 
 ## Usage
 
-**Run the vulnerable version (port 5001):**
+**Run the vulnerable version:**
 ```bash
 python app/app.py
+# Defaults to port 5001 — change with: python app/app.py --port <PORT>
 # Access at: http://localhost:5001
 ```
 
-**Run the hardened version (port 5002):**
+**Run the hardened version:**
 ```bash
 python app/secured/app_secure.py
+# Defaults to port 5002 — change with: python app/secured/app_secure.py --port <PORT>
 # Access at: http://localhost:5002
 ```
+
+> Both versions need to run on different ports simultaneously. The defaults (5001/5002) are chosen to avoid conflicts with Flask's standard port 5000, but any two available ports work — just pass the correct URL to the scanner.
 
 **Test credentials:**
 
